@@ -12,9 +12,6 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 # Initialize the NLP package downloads
 nltk.download('stopwords')
 
-# =========================================================
-# UPDATE: LOAD AND MERGE OLD SMS & MODERN TELEGRAM DATASETS
-# =========================================================
 
 # 1. Load the original Kaggle SMS Dataset
 df_sms = pd.read_csv('spam.csv', encoding='latin-1')
@@ -41,9 +38,7 @@ df = df.dropna()
 
 print(f"Datasets successfully merged! Total rows available for training: {len(df)}")
 
-# =========================================================
-# THE REST OF YOUR PIPELINE STAYS EXACTLY THE SAME
-# =========================================================
+
 
 # Define the text cleaning (NLP Preprocessing) pipeline
 stop_words = set(stopwords.words('english'))

@@ -72,11 +72,11 @@ with st.sidebar:
     active_page = st.radio(
         label="Go to:",
         options=[
-            "🔍 Single Text Scanner", 
-            "✨ Spam Word Sanitizer", 
+            "🔍 Spam Text Scanner", 
+            "✨ Spam Words Remover", 
             "📂 Bulk CSV Engine", 
             "📊 System Performance Metrics", 
-            "🤖 AI Security Chatbot"
+            "🧿 AI Security Chatbot"
         ]
     )
 
@@ -86,8 +86,8 @@ with st.sidebar:
 
 # --- MODULE 1: SINGLE TEXT SCANNER ---
 # --- MODULE 1: SINGLE TEXT SCANNER ---
-if active_page == "🔍 Single Text Scanner":
-    st.title("🔍 Real-Time Text Scanner")
+if active_page == "🔍 Spam Text Scanner":
+    st.title("🔍 Text Scanner - Spam Detection ")
     st.write("Paste an incoming email or SMS message down below to evaluate its safety profile.")
     
     user_input = st.text_area("Message Content:", height=150, placeholder="Type or paste your text here...")
@@ -128,8 +128,8 @@ if active_page == "🔍 Single Text Scanner":
                 st.plotly_chart(fig, use_container_width=True)
 
 # --- MODULE 2: SPAM WORD SANITIZER (OUTBOUND REMOVER WITH INTERACTIVE HOVER) ---
-elif active_page == "✨ Spam Word Sanitizer":
-    st.title("✨ Outbound Spam Word Sanitizer")
+elif active_page == "✨ Spam Words Remover":
+    st.title("✨ Outbound Spam Word Remover")
     st.write("Drafting an outbound email or text? Paste your draft here to find filter triggers. Hover your mouse over any highlighted word to instantly see a safe alternative suggestion.")
     
     draft_input = st.text_area("Your Draft Message Content:", height=150, placeholder="Dear friend, click here to get your guaranteed cash prize immediately!")
@@ -155,7 +155,7 @@ elif active_page == "✨ Spam Word Sanitizer":
                     raw_mapping = response.text.strip()
                     
                     st.markdown("---")
-                    st.subheader("Interactive Analysis View")
+                    st.subheader("Excepted Spam Words")
                     
                     # Programmatically reconstruct sentence using inline standard HTML highlight elements
                     display_html = draft_input
@@ -185,9 +185,10 @@ elif active_page == "✨ Spam Word Sanitizer":
                     st.error(f"API Error connecting to Gemini client: {e}")
 
 # --- MODULE 3: BULK CSV SCANNER ---
+# --- MODULE 3: BULK CSV SCANNER (WITH REAL-TIME GRAPH METRICS) ---
 elif active_page == "📂 Bulk CSV Engine":
     st.title("📂 Enterprise Bulk CSV Scanner")
-    st.write("Upload a corporate message dataset sheet (.csv format) to execute batch processing.")
+    st.write("Upload a corporate message dataset sheet (.csv format) to execute batch processing and view statistical metrics.")
     
     uploaded_file = st.file_uploader("Upload CSV Asset File:", type=["csv"])
     
@@ -196,18 +197,60 @@ elif active_page == "📂 Bulk CSV Engine":
         st.write("Dataset Column Map Preview:")
         st.dataframe(bulk_df.head(3), use_container_width=True)
         
-        target_column = st.selectbox("Choose the text data column column to process:", bulk_df.columns)
+        target_column = st.selectbox("Choose the text data column to process:", bulk_df.columns)
         
         if st.button("Execute Batch Processing Optimization"):
             with st.spinner("Processing text arrays..."):
+                # Clean and transform the entire text series
                 cleaned_series = bulk_df[target_column].astype(str).apply(clean_text)
                 matrix_transformed = vectorizer.transform(cleaned_series)
                 predictions = model.predict(matrix_transformed)
                 
+                # Append results column
                 bulk_df['AI_Security_Verdict'] = np.where(predictions == 1, 'SPAM', 'SAFE')
-                st.success("Batch log calculations complete.")
+                st.success("Batch calculation complete.")
+                
+                # --- NEW GRAPHICAL METRICS SECTION ---
+                st.markdown("### 📊 Dataset Threat Distribution")
+                
+                # Calculate counts safely
+                verdict_counts = bulk_df['AI_Security_Verdict'].value_counts()
+                safe_count = int(verdict_counts.get('SAFE', 0))
+                spam_count = int(verdict_counts.get('SPAM', 0))
+                
+                # Build side-by-side informational columns
+                g_col1, g_col2 = st.columns([1, 1.5])
+                
+                with g_col1:
+                    st.write("#### Total Summary Counts")
+                    st.metric("Total Rows Evaluated", f"{len(bulk_df)} records")
+                    st.metric("Verified Safe (Ham)", f"{safe_count} rows")
+                    st.metric("Identified Threats (Spam)", f"{spam_count} rows")
+                    
+                with g_col2:
+                    # Render a clean standard layout bar chart
+                    fig_bulk = go.Figure(data=[
+                        go.Bar(
+                            x=['Safe (Ham)', 'Spam'], 
+                            y=[safe_count, spam_count],
+                            marker_color=['#2ecc71', '#e74c3c'],
+                            text=[f"{safe_count}", f"{spam_count}"],
+                            textposition='auto'
+                        )
+                    ])
+                    fig_bulk.update_layout(
+                        yaxis_title="Message Count",
+                        margin=dict(t=10, b=10, l=10, r=10),
+                        height=250,
+                        showlegend=False
+                    )
+                    st.plotly_chart(fig_bulk, use_container_width=True)
+                
+                st.markdown("---")
+                st.write("#### Detailed Audited Logs View")
                 st.dataframe(bulk_df, use_container_width=True)
                 
+                # Prepare clean download file pipeline
                 processed_csv = bulk_df.to_csv(index=False).encode('utf-8')
                 st.download_button("📥 Download Audited CSV Records", processed_csv, "Batch_Audit_Logs.csv", "text/csv")
 
@@ -238,8 +281,8 @@ elif active_page == "📊 System Performance Metrics":
         st.dataframe(metrics_df, use_container_width=True, hide_index=True)
 
 # --- MODULE 5: AI SECURITY CHATBOT ---
-elif active_page == "🤖 AI Security Chatbot":
-    st.title("🤖 Gemini Security Specialist Consultant")
+elif active_page == "🧿 AI Security Chatbot":
+    st.title("🤖 Security Specialist Consultant")
     st.write("Consult live Generative AI regarding technical infrastructure security, network policy rules, or filtering logic.")
     
     for ch in st.session_state.chat_logs:
